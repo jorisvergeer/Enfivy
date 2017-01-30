@@ -14,6 +14,18 @@ https://nuget.org/packages/Envify.Fody/
 
 Replaces token in assemblies with values of environment valiables. (For example set by various build scripts or CI environments)
 
+For example
+
+~~~~
+[assembly: AssemblyInformationalVersionAttribute("%%TEST%%_%%OS%%")]
+~~~~
+
+With the example configuration below becomes:
+
+~~~~
+[assembly: AssemblyInformationalVersionAttribute("This works_Windows_NT")]
+~~~~
+
 ## Configuration
 
 All config options are attributes en children of Envify element in FodyWeavers.xml
