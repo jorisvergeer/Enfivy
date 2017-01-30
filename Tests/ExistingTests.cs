@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using LibGit2Sharp;
+using System.Xml.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
 
@@ -27,8 +27,14 @@ public class ExistingTests
 
         var moduleDefinition = ModuleDefinition.ReadModule(afterAssemblyPath);
         var currentDirectory = AssemblyLocation.CurrentDirectory();
+
+        var config = new XElement("Envify");
+        config.Add(new XElement("Attribute", new XAttribute("Name", "AssemblyInformationalVersionAttribute")));
+        config.Add(new XElement("Default", new XAttribute("Key", "TEST"), new XAttribute("Value", "SUCCEED")));
+
         var moduleWeaver = new ModuleWeaver
                            {
+                               Config = config,
                                ModuleDefinition = moduleDefinition,
                                AddinDirectoryPath = currentDirectory,
                                SolutionDirectoryPath = currentDirectory,
@@ -51,30 +57,16 @@ public class ExistingTests
         Assert.IsNotEmpty(customAttributes.InformationalVersion);
         Debug.WriteLine(customAttributes.InformationalVersion);
     }
-    [Test]
-    public void Win32Resource()
-    {
-        var productVersion = FileVersionInfo.GetVersionInfo(afterAssemblyPath).ProductVersion;
-
-        using (var repo = new Repository(Repository.Discover(TestContext.CurrentContext.TestDirectory)))
-        {
-            var nameOfCurrentBranch = repo.Head.Name;
-            Assert.True(productVersion.StartsWith("1.0.0+" + nameOfCurrentBranch + "."));
-        }
-    }
-
 
     [Test]
     public void TemplateIsReplaced()
     {
-        using (var repo = new Repository(Repository.Discover(TestContext.CurrentContext.TestDirectory)))
-        {
-            var nameOfCurrentBranch = repo.Head.Name;
+        var os = Environment.GetEnvironmentVariable("OS");
+        Assert.NotNull(os);
 
-            var customAttributes = (AssemblyInformationalVersionAttribute)assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
-                .First();
-            Assert.True(customAttributes.InformationalVersion.StartsWith("1.0.0+"+nameOfCurrentBranch+"."));
-        }
+        var customAttributes = (AssemblyInformationalVersionAttribute)assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).First();
+        Assert.True(customAttributes.InformationalVersion.StartsWith("SUCCEED"));
+        Assert.True(customAttributes.InformationalVersion.Contains(os));
     }
 
 

@@ -1,63 +1,41 @@
-![Icon](https://raw.github.com/Fody/Stamp/master/Icons/package_icon.png)
-
 ### This is an add-in for [Fody](https://github.com/Fody/Fody/) 
 
-Stamps an assembly with git data.
+Envify replace string tokens with environment variables during build
 
+Shamelessly based on Stamp.Fody
 
-## The nuget package  [![NuGet Status](http://img.shields.io/nuget/v/Stamp.Fody.svg?style=flat)](https://www.nuget.org/packages/Stamp.Fody/)
+## The nuget package
 
-https://nuget.org/packages/Stamp.Fody/
-
-    PM> Install-Package Stamp.Fody
+None (but the build creates a working nuget package)
 
 ## What it does 
 
-Extracts the git information from disk, combines it with the assembly version, and places it in the `AssemblyInformationalVersionAttribute`.
-
-So if your assembly version is 1.0.0.0, the working branch is "master" and the last commit is 759e9ddb53271dfa9335a3b27e452749a9b22280 then the following attribute will be added to the assembly.
-
-    [assembly: AssemblyInformationalVersion("1.0.0.0 Head:'master' Sha:759e9ddb53271dfa9335a3b27e452749a9b22280")]
-
-## Templating the version
-
-You can customize the string used in the `AssemblyInformationalVersionAttribute` by adding some tokens to the string, which Stamp will replace.
-
-For example, if you add `[assembly: AssemblyInformationalVersion("%version% Branch=%branch%")]` then Stamp will change it to `[assembly: AssemblyInformationalVersion("1.0.0.0 Branch=master")]`
-
-The tokens are:
-- `%version%` is replaced with the version (1.0.0.0)
-- `%version1%` is replaced with the major version only (1)
-- `%version2%` is replaced with the major and minor version (1.0)
-- `%version3%` is replaced with the major, minor, and revision version (1.0.0)
-- `%version4%` is replaced with the major, minor, revision, and build version (1.0.0.0)
-- `%githash%` is replaced with the SHA1 hash of the branch tip of the repository
-- `%shorthash%` is replaced with the first eight characters of %githash%
-- `%branch%` is replaced with the branch name of the repository
-- `%haschanges%` is replaced with the string defined in the ChangeString attribute in the configuration, see below.
-
-> NOTE: if you already have an AssemblyInformationalVersion attribute and it doesn't use replacement tokens, it will not be modified at all.
+Replaces token in assemblies with values of environment valiables. (For example set by various build scripts or CI environments)
 
 ## Configuration
 
-All config options are attributes of Stamp in FodyWeavers.xml
+All config options are attributes en children of Envify element in FodyWeavers.xml
 
-### ChangeString
+~~~~
+<?xml version="1.0" encoding="utf-8"?>
+<Weavers>
+  <Envify Preamble="%%" Postamble="%%" Regex="[a-zA-Z0-9_-]*">
+    <Attribute Name="AssemblyInformationalVersionAttribute"/>
+    <Default Key="TEST_VAR" Value="This works" />
+  </Envify>
+</Weavers>
+~~~~
 
-Define the string used to indicate that the code was built from a non clean repository.
+### Attributes of Envify
 
-*Default is `HasChanges`*
+`Preamble` defines the start of a replacement token. It defaults to "%%"
 
-	<Fody ChangeString="New text" />
+`Postamble` defines the end of a replacement token. It defaults to "%%"
 
-### UseProjectGit
+`Regex` defined the valid characters between the `Preamble` and `Postamble` . It defaults to "[a-zA-Z0-9_-]*"
 
-Define if you want to start Stamp to start searching for the Git repository in the ProjectDir (true) or the SolutionDir (false).
+### Elements in Envify
 
-*Default is `false`*
+`Attribute` defines which attributes should be checked for replacement tokens
 
-	<Fody UseProjectGit='true' />
-	
-## Icon
-
-<a href="http://thenounproject.com/noun/stamp/#icon-No8787" target="_blank">Stamp</a> designed by <a href="http://thenounproject.com/rohithdezinr" target="_blank">Rohith M S</a> from The Noun Project
+`Default` defines default values for a replacement token defined by the `Key` and `Value` attributes

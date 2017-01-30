@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 public class Configuration
 {
-    public bool UseProject;
-    public string ChangeString = "HasChanges";
+    public Dictionary<string, string> Defaults = new Dictionary<string, string>();
+    public List<string> AttributeNames = new List<string>();
+
+    public string Preamble = "%%";
+    public string Postamble = "%%";
+    public string Regex = "[a-zA-Z0-9_-]*";
 
     public Configuration(XElement config)
     {
@@ -13,23 +18,58 @@ public class Configuration
             return;
         }
 
-        var attr = config.Attribute("UseProjectGit");
-        if (attr != null)
+        foreach (var attribute in config.Attributes())
         {
-            try
-            {
-                UseProject = Convert.ToBoolean(attr.Value);
-            }
-            catch (Exception)
-            {
-                throw new WeavingException($"Unable to parse '{attr.Value}' as a boolean, please use true or false.");
-            }
+            if (attribute.Name == "Preamble")
+                Preamble = attribute.Value;
+            if (attribute.Name == "Postamble")
+                Postamble = attribute.Value;
+            if (attribute.Name == "Regex")
+                Regex = attribute.Value;
         }
 
-        attr = config.Attribute("ChangeString");
-        if (!string.IsNullOrWhiteSpace(attr?.Value))
+        foreach (var element in config.Elements())
         {
-            ChangeString = config.Attribute("ChangeString").Value;
+            if (element.Name == "Attribute")
+            {
+                var name = (string)null;
+
+                foreach (var attribute in element.Attributes())
+                {
+                    if (attribute.Name == "Name")
+                    {
+                        name = attribute.Value;
+                    }
+                }
+
+                if (name != null)
+                {
+                    AttributeNames.Add(name);
+                }
+            }
+
+            if (element.Name == "Default")
+            {
+                var key = (string)null;
+                var value = (string)null;
+
+                foreach (var attribute in element.Attributes())
+                {
+                    if (attribute.Name == "Key")
+                    {
+                        key = attribute.Value;
+                    }
+                    else if (attribute.Name == "Value")
+                    {
+                        value = attribute.Value;
+                    }
+                }
+
+                if (key != null && value != null)
+                {
+                    Defaults.Add(key, value);
+                }
+            }
         }
     }
 }
