@@ -4,9 +4,11 @@ Envify replace string tokens with environment variables during build
 
 Shamelessly based on Stamp.Fody
 
-## The nuget package
+## The nuget package  [![NuGet Status](http://img.shields.io/nuget/v/Envify.Fody.svg?style=flat)](https://www.nuget.org/packages/Envify.Fody/)
 
-None (but the build creates a working nuget package)
+https://nuget.org/packages/Envify.Fody/
+
+    PM> Install-Package Envify.Fody
 
 ## What it does 
 

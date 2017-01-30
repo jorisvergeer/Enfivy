@@ -11,7 +11,7 @@
     <projectUrl>http://github.com/jorisvergeer/Envify</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Replace string tokens with environment variables during build</description>
-    <language>en-AU</language>
+    <language>en</language>
     <tags>ILWeaving, Fody, Envify, Cecil, Environment</tags>
     <dependencies>
       <dependency id="Fody" version="1.29.2"/>
